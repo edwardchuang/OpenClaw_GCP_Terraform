@@ -1,0 +1,91 @@
+# OpenClaw on Google Cloud (Secure GKE Autopilot Template)
+
+> **Disclaimer:** This is not an officially supported Google product.
+
+This repository provides a production-grade, highly secure Terraform template for deploying and hosting the **OpenClaw** AI Agent framework on Google Cloud. 
+
+This architecture is designed around strict **Zero-Trust** principles, enforcing absolute isolation for AI workloads using enterprise-grade Google Cloud security products. It is specifically engineered to run **Gemini 3.1 Flash Lite** via Vertex AI while deeply inspecting and protecting all interactions.
+
+---
+
+## Technical Architecture & Security Posture
+
+This template implements a "defense-in-depth" strategy, ensuring that the OpenClaw agent, its operating environment, and its interactions with Vertex AI are heavily fortified against data exfiltration, prompt injection, and lateral movement.
+
+### 1. Private Networking & Egress Strategy
+The entire deployment resides within a fully private Virtual Private Cloud (VPC). 
+*   **No Public IPs:** Nodes, pods, and management VMs have no external IP addresses. Private Ingress is strictly enforced.
+*   **Cloud NAT:** A standard Cloud NAT is provided to allow the OpenClaw agent to natively browse the internet and utilize third-party APIs, and to allow GKE to pull public images (`ghcr.io`).
+*   **Secure Web Proxy (SWP):** A Google Cloud Secure Web Proxy is deployed alongside the NAT to provide an optional layer 7 explicit proxy for workloads that require strict domain allow-listing.
+
+*(Note: Initial designs attempted a "No Cloud NAT" approach to force all traffic through the SWP, but this was reverted as it severely degraded the AI Agent's capability to natively browse the internet without immense operational overhead).*
+
+### 2. Identity & Access Management (IAM)
+*   **Workload Identity:** OpenClaw pods authenticate to Vertex AI natively using GKE Workload Identity. No long-lived Service Account JSON keys are generated, stored, or mounted.
+*   **Identity-Aware Proxy (IAP):** The private GKE Control Plane and the Internal Load Balancers are managed via a dedicated Bastion host. Access to this Bastion is strictly gated by Google IAP, requiring authenticated, authorized users to tunnel over SSH without exposing port 22 to the public internet.
+
+### 3. GKE Agent Sandbox (gVisor)
+The OpenClaw application runs on **GKE Autopilot**, utilizing the **Agent Sandbox** feature.
+*   **Kernel Isolation:** Pods are deployed with the `gvisor` runtime class. This provides an additional layer of defense by intercepting application system calls and running them in an isolated user-space kernel, mitigating the impact of potential container breakout vulnerabilities.
+
+### 4. AI Security: Model Armor & Sensitive Data Protection (SDP)
+Interactions with the Vertex AI Gemini models are actively monitored and filtered at the infrastructure level.
+*   **Prompt Injection Detection:** Model Armor evaluates incoming prompts for malicious manipulation or jailbreak attempts.
+*   **Data Loss Prevention (DLP):** Sensitive Data Protection (SDP) templates are configured to scan prompts and model responses for PII (e.g., Credit Card Numbers, SSNs). If sensitive data is detected, Model Armor can block or redact the response based on the organizational Floor Settings.
+
+---
+
+## Deployment Instructions
+
+### Prerequisites
+*   Terraform 1.5+
+*   Google Cloud SDK (`gcloud`) configured with Owner or highly privileged organizational roles (required to enable APIs, create VPCs, manage IAM, and configure Private CAs).
+
+### Step 1: Bootstrap State Storage
+For production environments, Terraform state must be stored securely. 
+1. Navigate to the `terraform/` directory.
+2. Apply `00-bootstrap.tf` in an isolated workspace to create a secure, versioned Google Cloud Storage (GCS) bucket.
+3. Update `backend.tf` with the newly created bucket name.
+
+### Step 2: Initialize & Deploy
+```bash
+cd terraform/
+export TF_VAR_project_id="your-gcp-project-id"
+
+terraform init
+terraform plan
+terraform apply
+```
+
+### Step 3: Accessing the OpenClaw Web Console
+Because the environment is strictly private, the OpenClaw Web Console (`18791`) and Gateway (`18789`) are not exposed to the public internet. They are exposed via an Internal Load Balancer with a private DNS record (`ui.openclaw.internal`).
+
+To access the UI locally, establish an IAP TCP forwarding tunnel through the Bastion host:
+
+```bash
+# Forward the Gateway API and the Web Console ports through the Bastion
+gcloud compute ssh openclaw-bastion-prod \
+    --tunnel-through-iap \
+    --zone us-central1-a \
+    --project <your-project-id> \
+    -- -L 18789:ui.openclaw.internal:18789 \
+       -L 18791:ui.openclaw.internal:18791
+```
+
+Once the tunnel is established, open your browser and navigate to:
+**http://localhost:18791**
+
+*(The default password configured in the Terraform template is `securepassword123`)*
+
+---
+
+## Configuration Management (GitOps)
+OpenClaw's configuration (`openclaw.json`) is managed as code. 
+1. The base configuration is defined in `terraform/templates/openclaw.json.tpl`.
+2. Terraform dynamically injects environment variables into this template.
+3. The resulting JSON is deployed as a Kubernetes `ConfigMap`.
+4. An `initContainer` securely copies the read-only ConfigMap data into a writable `emptyDir` volume at pod startup, ensuring the `node` user has the correct permissions.
+5. A lightweight `socat` sidecar is utilized to proxy traffic from the Load Balancer to the OpenClaw Control Service, which securely binds only to `127.0.0.1` by default.
+
+## License
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
