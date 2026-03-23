@@ -1,17 +1,21 @@
 # ------------------------------------------------------------------------
 # Enterprise Certificate Management: Google Private CA
 # ------------------------------------------------------------------------
+resource "random_id" "ca_suffix" {
+  byte_length = 4
+}
+
 resource "google_privateca_ca_pool" "default" {
-  name     = "openclaw-ca-pool-${var.environment}"
+  name     = "openclaw-ca-pool-ent-${var.environment}-${random_id.ca_suffix.hex}"
   location = var.region
-  tier     = "DEVOPS"
+  tier     = "ENTERPRISE"
 
   depends_on = [google_project_service.enabled_apis]
 }
 
 resource "google_privateca_certificate_authority" "root_ca" {
   pool                     = google_privateca_ca_pool.default.name
-  certificate_authority_id = "openclaw-root-ca-${var.environment}"
+  certificate_authority_id = "openclaw-root-ca-ent-${var.environment}-${random_id.ca_suffix.hex}"
   location                 = var.region
 
   config {
@@ -51,6 +55,10 @@ resource "google_privateca_certificate_authority" "root_ca" {
 resource "tls_private_key" "swp_key" {
   algorithm   = "RSA"
   ecdsa_curve = "P256"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # Create a Certificate Signing Request (CSR)
@@ -60,25 +68,45 @@ resource "tls_cert_request" "swp_csr" {
     common_name  = "swp.openclaw.internal"
     organization = "OpenClaw"
   }
+  
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# Wait for CA propagation to prevent provider inconsistency errors
+resource "time_sleep" "wait_for_ca" {
+  depends_on      = [google_privateca_certificate_authority.root_ca]
+  create_duration = "30s"
 }
 
 # Issue the certificate using the Private CA
 resource "google_privateca_certificate" "swp_cert" {
+  depends_on            = [time_sleep.wait_for_ca]
   pool                  = google_privateca_ca_pool.default.name
   location              = var.region
   certificate_authority = google_privateca_certificate_authority.root_ca.certificate_authority_id
-  name                  = "openclaw-swp-cert-${var.environment}"
+  name                  = "openclaw-swp-cert-${var.environment}-${random_id.ca_suffix.hex}"
   pem_csr               = tls_cert_request.swp_csr.cert_request_pem
   lifetime              = "864000s" # 10 days (in production use auto-rotation)
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # Map the issued certificate into Certificate Manager for the SWP
 resource "google_certificate_manager_certificate" "swp_cert" {
-  name        = "openclaw-swp-cert-${var.environment}"
+  name        = "openclaw-swp-cert-${var.environment}-${random_id.ca_suffix.hex}"
   description = "Managed cert for SWP explicit proxy via Private CA"
+  location    = var.region
   self_managed {
     pem_certificate = google_privateca_certificate.swp_cert.pem_certificate
     pem_private_key = tls_private_key.swp_key.private_key_pem
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
@@ -126,15 +154,6 @@ resource "google_network_security_gateway_security_policy_rule" "deny_all" {
   basic_profile           = "DENY"
 }
 
-# Allocate a static internal IP for the Proxy so the Bastion script can reliably target it
-resource "google_compute_address" "swp_ip" {
-  name         = "openclaw-swp-ip-${var.environment}"
-  region       = var.region
-  subnetwork   = google_compute_subnetwork.gke_subnet.id
-  address_type = "INTERNAL"
-  purpose      = "GCE_ENDPOINT"
-}
-
 # The Secure Web Proxy Instance
 resource "google_network_services_gateway" "swp" {
   name                                 = "openclaw-swp-${var.environment}"
@@ -143,7 +162,6 @@ resource "google_network_services_gateway" "swp" {
   ports                                = [443]
   network                              = google_compute_network.vpc.id
   subnetwork                           = google_compute_subnetwork.gke_subnet.id
-  addresses                            = [google_compute_address.swp_ip.id]
   certificate_urls                     = [google_certificate_manager_certificate.swp_cert.id]
   gateway_security_policy              = google_network_security_gateway_security_policy.swp_policy.id
   delete_swg_autogen_router_on_destroy = true
