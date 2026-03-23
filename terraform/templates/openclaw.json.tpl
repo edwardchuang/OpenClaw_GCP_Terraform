@@ -1,5 +1,6 @@
 {
   "gateway": {
+    "bind": "lan",
     "auth": {
       "mode": "password"
     }

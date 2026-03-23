@@ -73,7 +73,7 @@ gcloud compute ssh openclaw-bastion-prod \
 ```
 
 Once the tunnel is established, open your browser and navigate to:
-**http://localhost:18791**
+**http://localhost:18789**
 
 *(The default password configured in the Terraform template is `securepassword123`)*
 
