@@ -26,7 +26,7 @@ resource "kubernetes_config_map" "openclaw_config" {
       project_id = var.project_id
       region     = var.region
       # The SWP explicit proxy URL injected directly into the config
-      swp_proxy_url = "http://${google_compute_address.swp_ip.address}:443"
+      swp_proxy_url = "http://${google_network_services_gateway.swp.addresses[0]}:443"
     })
   }
 
@@ -121,11 +121,11 @@ resource "kubernetes_deployment" "openclaw_deployment" {
           # Inject SWP Proxy configuration via Environment Variables
           env {
             name  = "HTTPS_PROXY"
-            value = "http://${google_compute_address.swp_ip.address}:443"
+            value = "http://${google_network_services_gateway.swp.addresses[0]}:443"
           }
           env {
             name  = "HTTP_PROXY"
-            value = "http://${google_compute_address.swp_ip.address}:443"
+            value = "http://${google_network_services_gateway.swp.addresses[0]}:443"
           }
           env {
             name  = "NO_PROXY"

@@ -44,12 +44,12 @@ resource "google_compute_instance" "bastion" {
   metadata_startup_script = <<-EOF
     #!/bin/bash
     # Set proxy for curl and wget
-    export HTTP_PROXY="http://${google_compute_address.swp_ip.address}:443"
-    export HTTPS_PROXY="http://${google_compute_address.swp_ip.address}:443"
+    export HTTP_PROXY="http://${google_network_services_gateway.swp.addresses[0]}:443"
+    export HTTPS_PROXY="http://${google_network_services_gateway.swp.addresses[0]}:443"
     
     # Configure APT to use the proxy
-    echo "Acquire::http::Proxy \"http://${google_compute_address.swp_ip.address}:443\";" | sudo tee /etc/apt/apt.conf.d/proxy.conf
-    echo "Acquire::https::Proxy \"http://${google_compute_address.swp_ip.address}:443\";" | sudo tee -a /etc/apt/apt.conf.d/proxy.conf
+    echo "Acquire::http::Proxy \"http://${google_network_services_gateway.swp.addresses[0]}:443\";" | sudo tee /etc/apt/apt.conf.d/proxy.conf
+    echo "Acquire::https::Proxy \"http://${google_network_services_gateway.swp.addresses[0]}:443\";" | sudo tee -a /etc/apt/apt.conf.d/proxy.conf
 
     sudo apt-get update
     sudo apt-get install -y apt-transport-https ca-certificates gnupg curl
