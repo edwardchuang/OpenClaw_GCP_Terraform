@@ -111,8 +111,8 @@ resource "kubernetes_deployment" "openclaw_deployment" {
             value = "lan" # Listen on 0.0.0.0 instead of 127.0.0.1
           }
           env {
-            name  = "OPENCLAW_GATEWAY_PASSWORD"
-            value = "securepassword123" # The password for the Web UI
+            name  = "OPENCLAW_GATEWAY_TOKEN"
+            value = "securepassword123" # The token for the Web UI
           }
           env {
             name  = "OPENCLAW_SANDBOX"

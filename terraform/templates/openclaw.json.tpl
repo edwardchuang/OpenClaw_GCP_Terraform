@@ -1,8 +1,9 @@
 {
   "gateway": {
     "bind": "lan",
+    "mode": "local",
     "auth": {
-      "mode": "password"
+      "mode": "token"
     }
   },
   "env": {
