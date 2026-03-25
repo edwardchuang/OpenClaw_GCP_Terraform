@@ -33,11 +33,73 @@ resource "kubernetes_config_map" "openclaw_config" {
   depends_on = [google_container_cluster.openclaw_cluster]
 }
 
-# 2. OpenClaw Deployment
+# 2. Secret Management (Google Secret Manager)
 resource "random_password" "gateway_token" {
   length  = 32
   special = false
 }
+
+resource "google_secret_manager_secret" "gateway_token_secret" {
+  secret_id = "openclaw-gateway-token-${var.environment}"
+  replication {
+    auto {}
+  }
+  depends_on = [google_project_service.enabled_apis]
+}
+
+resource "google_secret_manager_secret_version" "gateway_token_version" {
+  secret      = google_secret_manager_secret.gateway_token_secret.id
+  secret_data = random_password.gateway_token.result
+}
+
+# Grant the OpenClaw Workload Identity SA permission to read this specific secret
+resource "google_secret_manager_secret_iam_binding" "gateway_token_accessor" {
+  secret_id = google_secret_manager_secret.gateway_token_secret.id
+  role      = "roles/secretmanager.secretAccessor"
+  members   = [
+    "serviceAccount:${google_service_account.openclaw_sa.email}"
+  ]
+}
+
+# 3. SecretProviderClass for CSI Driver
+# This tells the CSI driver how to fetch the secret from GSM and sync it to a K8s Secret
+resource "kubernetes_manifest" "secret_provider_class" {
+  manifest = {
+    apiVersion = "secrets-store.csi.x-k8s.io/v1"
+    kind       = "SecretProviderClass"
+    metadata = {
+      name      = "openclaw-gsm-secrets"
+      namespace = kubernetes_namespace.openclaw_namespace.metadata[0].name
+    }
+    spec = {
+      provider = "gke"
+      parameters = {
+        secrets = yamlencode([
+          {
+            resourceName = google_secret_manager_secret_version.gateway_token_version.name
+            fileName     = "gateway_token"
+          }
+        ])
+      }
+      secretObjects = [
+        {
+          secretName = "openclaw-gateway-secret"
+          type       = "Opaque"
+          data = [
+            {
+              objectName = "gateway_token" # Maps to the fileName above
+              key        = "OPENCLAW_GATEWAY_TOKEN"
+            }
+          ]
+        }
+      ]
+    }
+  }
+
+  depends_on = [google_container_cluster.openclaw_cluster]
+}
+
+# 4. OpenClaw Deployment
 
 resource "kubernetes_deployment" "openclaw_deployment" {
   metadata {
@@ -115,10 +177,18 @@ resource "kubernetes_deployment" "openclaw_deployment" {
             name  = "OPENCLAW_GATEWAY_BIND"
             value = "lan" # Listen on 0.0.0.0 instead of 127.0.0.1
           }
+          
+          # Securely inject the Gateway Token from the CSI-synced Kubernetes Secret
           env {
-            name  = "OPENCLAW_GATEWAY_TOKEN"
-            value = random_password.gateway_token.result # The token for the API
+            name = "OPENCLAW_GATEWAY_TOKEN"
+            value_from {
+              secret_key_ref {
+                name = "openclaw-gateway-secret"
+                key  = "OPENCLAW_GATEWAY_TOKEN"
+              }
+            }
           }
+          
           env {
             name  = "OPENCLAW_SANDBOX"
             value = "0" # Disable Docker-in-Docker sandboxing (we rely on gVisor)
@@ -163,6 +233,13 @@ resource "kubernetes_deployment" "openclaw_deployment" {
             name       = "config-writable"
             mount_path = "/home/node/.openclaw"
           }
+
+          # Mount the CSI Secrets Store volume (this triggers the sync to K8s Secret)
+          volume_mount {
+            name       = "gsm-secrets"
+            mount_path = "/mnt/secrets"
+            read_only  = true
+          }
         }
 
         # Sidecar Proxy: OpenClaw hardcodes the Control Service (18791) to bind to 127.0.0.1.
@@ -200,11 +277,27 @@ resource "kubernetes_deployment" "openclaw_deployment" {
           name = "config-writable"
           empty_dir {}
         }
+
+        # CSI Volume for Google Secret Manager
+        volume {
+          name = "gsm-secrets"
+          csi {
+            driver    = "secrets-store-gke.csi.k8s.io"
+            read_only = true
+            volume_attributes = {
+              secretProviderClass = "openclaw-gsm-secrets"
+            }
+          }
+        }
       }
     }
   }
 
-  depends_on = [kubernetes_config_map.openclaw_config]
+  depends_on = [
+    kubernetes_config_map.openclaw_config,
+    kubernetes_manifest.secret_provider_class,
+    google_secret_manager_secret_iam_binding.gateway_token_accessor
+  ]
 }
 
 # Reserve a static internal IP address for the OpenClaw Internal Load Balancer

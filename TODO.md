@@ -21,4 +21,4 @@
 - [ ] Test connectivity for multiple instances (via IAP tunnels or Ingress).
 
 ## 5. Security Enhancements (Post-Implementation)
-- [ ] Upgrade token management to Google Secret Manager (GSM) with CSI Driver for production-grade security.
+- [x] Upgrade token management to Google Secret Manager (GSM) with CSI Driver for production-grade security.
