@@ -30,7 +30,7 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "google-vertex/gemini-3.1-pro-preview"
+        "primary": "google-vertex/gemini-3.1-flash-preview"
       }
     }
   }
