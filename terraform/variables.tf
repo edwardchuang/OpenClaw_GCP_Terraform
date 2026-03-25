@@ -20,3 +20,11 @@ variable "environment" {
   type        = string
   default     = "prod"
 }
+
+variable "openclaw_instances" {
+  type = map(object({
+    image         = string
+    gateway_token = string
+  }))
+  description = "Map of OpenClaw instance configurations"
+}

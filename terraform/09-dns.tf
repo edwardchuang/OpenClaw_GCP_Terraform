@@ -63,16 +63,6 @@ resource "google_dns_managed_zone" "internal_app_zone" {
   depends_on = [google_project_service.enabled_apis]
 }
 
-# The A record pointing to the GKE Internal Load Balancer
-resource "google_dns_record_set" "openclaw_ui_record" {
-  name         = "ui.${google_dns_managed_zone.internal_app_zone.dns_name}"
-  managed_zone = google_dns_managed_zone.internal_app_zone.name
-  type         = "A"
-  ttl          = 300
-
-  # Dynamically pull the static IP reserved for the Load Balancer
-  rrdatas = [google_compute_address.openclaw_ilb_ip.address]
-}
 # The CNAME record for all subdomains (e.g., *.googleapis.com)
 resource "google_dns_record_set" "pga_cname_record" {
   for_each     = toset(local.pga_domains)

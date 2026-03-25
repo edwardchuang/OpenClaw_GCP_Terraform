@@ -1,6 +1,7 @@
 {
   "gateway": {
     "bind": "lan",
+    "name": "${instance_name}",
     "mode": "local",
     "auth": {
       "mode": "token"
@@ -12,6 +13,7 @@
   },
   "env": {
     "vars": {
+      "INSTANCE_NAME": "${instance_name}",
       "GOOGLE_CLOUD_PROJECT": "${project_id}",
       "GOOGLE_CLOUD_LOCATION": "${region}",
       "GOOGLE_VERTEX_BASE_URL": "https://aiplatform.googleapis.com/",

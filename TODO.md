@@ -5,10 +5,10 @@
 - [ ] Map out shared vs. instance-specific resources.
 
 ## 2. Infrastructure Refactoring
-- [ ] Create `terraform/modules/openclaw-instance/` directory.
-- [ ] Extract `kubernetes_deployment`, `kubernetes_service`, and `kubernetes_config_map` into the module.
-- [ ] Update `terraform/variables.tf` to support a map-based definition for multiple instances.
-- [ ] Refactor `terraform/08-app.tf` to use `module "openclaw_instance"` calls.
+- [x] Create `terraform/modules/openclaw-instance/` directory.
+- [x] Extract `kubernetes_deployment`, `kubernetes_service`, and `kubernetes_config_map` into the module.
+- [x] Update `terraform/variables.tf` to support a map-based definition for multiple instances.
+- [x] Refactor `terraform/08-app.tf` to use `module "openclaw_instance"` calls.
 
 ## 3. Dynamic Configuration
 - [ ] Parameterize `openclaw.json.tpl` for instance-specific tags/names/settings.
