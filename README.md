@@ -60,6 +60,12 @@ terraform apply
 ### Step 3: Accessing the OpenClaw Web Console
 Because the environment is strictly private, the OpenClaw Web Console (`18791`) and Gateway (`18789`) are not exposed to the public internet. They are exposed via an Internal Load Balancer with a private DNS record (`ui.openclaw.internal`).
 
+The gateway token is randomly generated and please use this command to retrive it:
+
+```bash
+terraform output -raw gateway_token
+```
+
 To access the UI locally, establish an IAP TCP forwarding tunnel through the Bastion host:
 
 ```bash
@@ -68,8 +74,7 @@ gcloud compute ssh openclaw-bastion-prod \
     --tunnel-through-iap \
     --zone us-central1-a \
     --project <your-project-id> \
-    -- -L 18789:ui.openclaw.internal:18789 \
-       -L 18791:ui.openclaw.internal:18791
+    -- -N -L 18789:ui.openclaw.internal:18789 
 ```
 
 Once the tunnel is established, open your browser and navigate to:

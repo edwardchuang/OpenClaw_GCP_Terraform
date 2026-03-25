@@ -34,6 +34,11 @@ resource "kubernetes_config_map" "openclaw_config" {
 }
 
 # 2. OpenClaw Deployment
+resource "random_password" "gateway_token" {
+  length  = 32
+  special = false
+}
+
 resource "kubernetes_deployment" "openclaw_deployment" {
   metadata {
     name      = "openclaw-agent"
@@ -112,7 +117,7 @@ resource "kubernetes_deployment" "openclaw_deployment" {
           }
           env {
             name  = "OPENCLAW_GATEWAY_TOKEN"
-            value = "securepassword123" # The token for the Web UI
+            value = random_password.gateway_token.result # The token for the API
           }
           env {
             name  = "OPENCLAW_SANDBOX"

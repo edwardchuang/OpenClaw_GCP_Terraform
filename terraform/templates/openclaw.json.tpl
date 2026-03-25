@@ -4,6 +4,10 @@
     "mode": "local",
     "auth": {
       "mode": "token"
+    },
+    "controlUi": {
+      "allowInsecureAuth": true,
+      "dangerouslyDisableDeviceAuth": true
     }
   },
   "env": {
