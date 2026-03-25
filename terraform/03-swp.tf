@@ -121,42 +121,9 @@ resource "google_network_security_gateway_security_policy" "swp_policy" {
   description = "Gateway security policy for OpenClaw Secure Web Proxy"
 }
 
-# SWP Rule: Block known malicious sources using Google Cloud Threat Intelligence
-resource "google_network_security_gateway_security_policy_rule" "block_threat_intel_malicious" {
-  name                    = "block-threat-intel-malicious"
-  location                = var.region
-  gateway_security_policy = google_network_security_gateway_security_policy.swp_policy.name
-  enabled                 = true
-  priority                = 200
-  session_matcher         = "evaluateThreatIntelligence('iplist-known-malicious-ips')"
-  basic_profile           = "DENY"
-}
-
-# SWP Rule: Block Crypto Miners
-resource "google_network_security_gateway_security_policy_rule" "block_threat_intel_crypto" {
-  name                    = "block-threat-intel-crypto"
-  location                = var.region
-  gateway_security_policy = google_network_security_gateway_security_policy.swp_policy.name
-  enabled                 = true
-  priority                = 201
-  session_matcher         = "evaluateThreatIntelligence('iplist-crypto-miners')"
-  basic_profile           = "DENY"
-}
-
-# SWP Rule: Block Anonymous Proxies & Tor
-resource "google_network_security_gateway_security_policy_rule" "block_threat_intel_anon" {
-  name                    = "block-threat-intel-anon"
-  location                = var.region
-  gateway_security_policy = google_network_security_gateway_security_policy.swp_policy.name
-  enabled                 = true
-  priority                = 202
-  session_matcher         = "evaluateThreatIntelligence('iplist-anon-proxies') || evaluateThreatIntelligence('iplist-tor-exit-nodes')"
-  basic_profile           = "DENY"
-}
-
 # SWP Rule: Default Allow for AI Web Surfing (We rely on gVisor and Model Armor for safety)
 resource "google_network_security_gateway_security_policy_rule" "allow_all_web" {
-  name                    = "allow-all-web"
+  name                    = "allow-all-web-v2"
   location                = var.region
   gateway_security_policy = google_network_security_gateway_security_policy.swp_policy.name
   enabled                 = true
