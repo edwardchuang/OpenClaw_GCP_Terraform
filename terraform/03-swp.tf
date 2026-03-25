@@ -121,37 +121,48 @@ resource "google_network_security_gateway_security_policy" "swp_policy" {
   description = "Gateway security policy for OpenClaw Secure Web Proxy"
 }
 
-# Allow explicit egress for the Bastion to download apt packages
-resource "google_network_security_gateway_security_policy_rule" "allow_debian_apt" {
-  name                    = "allow-debian-apt"
+# SWP Rule: Block known malicious sources using Google Cloud Threat Intelligence
+resource "google_network_security_gateway_security_policy_rule" "block_threat_intel_malicious" {
+  name                    = "block-threat-intel-malicious"
   location                = var.region
   gateway_security_policy = google_network_security_gateway_security_policy.swp_policy.name
   enabled                 = true
-  priority                = 100
-  session_matcher         = "host() == 'deb.debian.org' || host() == 'packages.cloud.google.com' || host() == 'apt.kubernetes.io'"
-  basic_profile           = "ALLOW"
+  priority                = 200
+  session_matcher         = "evaluateThreatIntelligence('iplist-known-malicious-ips')"
+  basic_profile           = "DENY"
 }
 
-# Allow explicit egress to GitHub (for OpenClaw Agent Skills)
-resource "google_network_security_gateway_security_policy_rule" "allow_github" {
-  name                    = "allow-github"
+# SWP Rule: Block Crypto Miners
+resource "google_network_security_gateway_security_policy_rule" "block_threat_intel_crypto" {
+  name                    = "block-threat-intel-crypto"
   location                = var.region
   gateway_security_policy = google_network_security_gateway_security_policy.swp_policy.name
   enabled                 = true
-  priority                = 110
-  session_matcher         = "host() == 'github.com' || host() == 'api.github.com'"
-  basic_profile           = "ALLOW"
+  priority                = 201
+  session_matcher         = "evaluateThreatIntelligence('iplist-crypto-miners')"
+  basic_profile           = "DENY"
 }
 
-# SWP Rule: Deny all other external web traffic
-resource "google_network_security_gateway_security_policy_rule" "deny_all" {
-  name                    = "deny-all-web"
+# SWP Rule: Block Anonymous Proxies & Tor
+resource "google_network_security_gateway_security_policy_rule" "block_threat_intel_anon" {
+  name                    = "block-threat-intel-anon"
+  location                = var.region
+  gateway_security_policy = google_network_security_gateway_security_policy.swp_policy.name
+  enabled                 = true
+  priority                = 202
+  session_matcher         = "evaluateThreatIntelligence('iplist-anon-proxies') || evaluateThreatIntelligence('iplist-tor-exit-nodes')"
+  basic_profile           = "DENY"
+}
+
+# SWP Rule: Default Allow for AI Web Surfing (We rely on gVisor and Model Armor for safety)
+resource "google_network_security_gateway_security_policy_rule" "allow_all_web" {
+  name                    = "allow-all-web"
   location                = var.region
   gateway_security_policy = google_network_security_gateway_security_policy.swp_policy.name
   enabled                 = true
   priority                = 9999
   session_matcher         = "true"
-  basic_profile           = "DENY"
+  basic_profile           = "ALLOW"
 }
 
 # The Secure Web Proxy Instance

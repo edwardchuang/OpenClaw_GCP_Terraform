@@ -13,7 +13,8 @@ locals {
     "dns.googleapis.com",                  # Cloud DNS (Required for PGA)
     "dlp.googleapis.com",                  # Sensitive Data Protection (SDP)
     "modelarmor.googleapis.com",           # Model Armor
-    "secretmanager.googleapis.com"         # Secret Manager
+    "secretmanager.googleapis.com",        # Secret Manager
+    "logging.googleapis.com"               # Cloud Logging (Required for SWP Audit Logs)
   ]
 }
 resource "google_project_service" "enabled_apis" {
