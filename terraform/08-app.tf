@@ -79,7 +79,7 @@ resource "kubernetes_deployment" "openclaw_deployment" {
           command = [
             "sh",
             "-c",
-            "cp /etc/openclaw-template/* /workspace/ && chown -R 1000:1000 /workspace/"
+            "cp /etc/openclaw-template/* /workspace/ && mkdir -p /workspace/agents/main/agent && echo '{\"version\": 1, \"profiles\": {\"google-vertex:default\": {\"provider\": \"google-vertex\", \"mode\": \"api_key\", \"apiKey\": \"<authenticated>\"}}}' > /workspace/agents/main/agent/auth-profiles.json && chown -R 1000:1000 /workspace/"
           ]
 
           security_context {
@@ -123,6 +123,18 @@ resource "kubernetes_deployment" "openclaw_deployment" {
             name  = "OPENCLAW_SANDBOX"
             value = "0" # Disable Docker-in-Docker sandboxing (we rely on gVisor)
           }
+          env {
+            name  = "GOOGLE_CLOUD_PROJECT"
+            value = var.project_id
+          }
+          env {
+            name  = "GOOGLE_CLOUD_LOCATION"
+            value = var.region
+          }
+          env {
+            name  = "GOOGLE_VERTEX_BASE_URL"
+            value = "https://aiplatform.googleapis.com/"
+          }
           # Inject SWP Proxy configuration via Environment Variables
           env {
             name  = "HTTPS_PROXY"
@@ -134,7 +146,7 @@ resource "kubernetes_deployment" "openclaw_deployment" {
           }
           env {
             name  = "NO_PROXY"
-            value = "localhost,127.0.0.1,metadata.google.internal,10.0.0.0/8,.svc.cluster.local"
+            value = "localhost,127.0.0.1,metadata.google.internal,169.254.169.254,10.0.0.0/8,.svc.cluster.local,.googleapis.com,googleapis.com"
           }
 
           port {
