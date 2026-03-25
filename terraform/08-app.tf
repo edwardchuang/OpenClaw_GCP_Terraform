@@ -164,7 +164,7 @@ resource "kubernetes_deployment" "openclaw_deployment" {
         container {
           name = "openclaw"
           # We can pull from GitHub Container Registry now that Cloud NAT is enabled
-          image = "ghcr.io/openclaw/openclaw:latest"
+          image = "${var.region}-docker.pkg.dev/${var.project_id}/openclaw-repo-${var.environment}/openclaw-custom:v1.0.0"
 
           # Force the container to run as the 'node' user (UID 1000)
           # and explicitly disable privilege escalation for GKE Autopilot

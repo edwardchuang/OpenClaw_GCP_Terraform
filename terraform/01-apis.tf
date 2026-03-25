@@ -14,7 +14,8 @@ locals {
     "dlp.googleapis.com",                  # Sensitive Data Protection (SDP)
     "modelarmor.googleapis.com",           # Model Armor
     "secretmanager.googleapis.com",        # Secret Manager
-    "logging.googleapis.com"               # Cloud Logging (Required for SWP Audit Logs)
+    "logging.googleapis.com",              # Cloud Logging (Required for SWP Audit Logs)
+    "artifactregistry.googleapis.com"      # Artifact Registry (For custom Docker images)
   ]
 }
 resource "google_project_service" "enabled_apis" {
