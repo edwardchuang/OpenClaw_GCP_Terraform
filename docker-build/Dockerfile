@@ -36,12 +36,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     gnupg \
     procps \
+    xvfb \
+    xauth \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a wrapper script to force required flags for Docker/Kubernetes/gVisor
 RUN mv /usr/bin/chromium /usr/bin/chromium-orig && \
     echo '#!/bin/bash' > /usr/bin/chromium && \
-    echo 'exec /usr/bin/chromium-orig --no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu --disable-software-rasterizer --single-process --no-zygote "$@"' >> /usr/bin/chromium && \
+    echo 'xvfb-run -a /usr/bin/chromium-orig --no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu --disable-software-rasterizer --single-process --no-zygote "$@"' >> /usr/bin/chromium && \
     chmod +x /usr/bin/chromium
 
 # Create directory for custom skills
