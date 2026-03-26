@@ -62,6 +62,7 @@ resource "kubernetes_deployment" "openclaw_deployment" {
         container {
           name  = "openclaw"
           image = var.image
+          image_pull_policy = "Always"
           security_context {
             run_as_user                = 1000
             allow_privilege_escalation = false

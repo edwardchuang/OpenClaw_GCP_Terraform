@@ -26,8 +26,14 @@ RUN npm install @modelcontextprotocol/sdk
 # ---------------------------------------------------------
 FROM ghcr.io/openclaw/openclaw:latest
 
-# We run as the non-root user defined in the official image
+# We run as the non-root user defined in the official image, but need root to install packages
 USER root
+
+# Install Chromium and required dependencies for browser-based skills
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    chromium \
+    chromium-sandbox \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create directory for custom skills
 RUN mkdir -p /home/node/custom-skills && chown -R node:node /home/node/custom-skills
@@ -41,5 +47,9 @@ USER node
 
 # Set NODE_PATH so Node.js knows where to find these global-like modules
 ENV NODE_PATH=/home/node/custom-skills/node_modules:$NODE_PATH
+# Tell tools like Puppeteer/Playwright to use the system Chromium
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV CHROME_BIN=/usr/bin/chromium
+ENV CHROME_PATH=/usr/bin/chromium
 
 # The entrypoint remains the default from ghcr.io/openclaw/openclaw
