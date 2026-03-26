@@ -33,7 +33,21 @@ USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     chromium-sandbox \
+    wget \
+    gnupg \
+    procps \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Playwright and its OS dependencies globally
+RUN npm install -g playwright && \
+    npx playwright install-deps chromium && \
+    npx playwright install chromium
+
+# Create a wrapper script to force required flags for Docker/Kubernetes/gVisor
+RUN mv /usr/bin/chromium /usr/bin/chromium-orig && \
+    echo '#!/bin/bash' > /usr/bin/chromium && \
+    echo 'exec /usr/bin/chromium-orig --no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu --disable-software-rasterizer --single-process --no-zygote "$@"' >> /usr/bin/chromium && \
+    chmod +x /usr/bin/chromium
 
 # Create directory for custom skills
 RUN mkdir -p /home/node/custom-skills && chown -R node:node /home/node/custom-skills
