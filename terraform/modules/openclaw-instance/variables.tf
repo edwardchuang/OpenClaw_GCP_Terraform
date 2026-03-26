@@ -10,11 +10,6 @@ variable "image" {
   type = string
 }
 
-variable "gateway_token" {
-  type = string
-  sensitive = true
-}
-
 variable "project_id" {
   type = string
 }
@@ -40,5 +35,9 @@ variable "dns_zone_name" {
 }
 
 variable "dns_zone_dns_name" {
+  type = string
+}
+
+variable "openclaw_sa_email" {
   type = string
 }

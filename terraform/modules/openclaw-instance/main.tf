@@ -70,9 +70,15 @@ resource "kubernetes_deployment" "openclaw_deployment" {
             name  = "OPENCLAW_GATEWAY_BIND"
             value = "lan"
           }
+          # Securely inject the Gateway Token from the CSI-synced Kubernetes Secret
           env {
             name  = "OPENCLAW_GATEWAY_TOKEN"
-            value = var.gateway_token
+            value_from {
+              secret_key_ref {
+                name = "openclaw-gateway-secret-${var.instance_name}"
+                key  = "OPENCLAW_GATEWAY_TOKEN"
+              }
+            }
           }
           env {
             name  = "OPENCLAW_SANDBOX"
@@ -141,7 +147,7 @@ resource "kubernetes_deployment" "openclaw_deployment" {
             driver    = "secrets-store-gke.csi.k8s.io"
             read_only = true
             volume_attributes = {
-              secretProviderClass = "openclaw-gsm-secrets"
+              secretProviderClass = "openclaw-gsm-secrets-${var.instance_name}"
             }
           }
         }

@@ -23,8 +23,7 @@ variable "environment" {
 
 variable "openclaw_instances" {
   type = map(object({
-    image         = string
-    gateway_token = string
+    image = string
   }))
   description = "Map of OpenClaw instance configurations"
 }

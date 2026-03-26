@@ -1,5 +1,5 @@
-output "gateway_token" {
-  value     = random_password.gateway_token.result
+output "gateway_tokens" {
+  value     = { for k, v in module.openclaw_instances : k => v.gateway_token }
   sensitive = true
-  description = "The dynamically generated API Token for the OpenClaw Gateway."
+  description = "The dynamically generated API Tokens for all OpenClaw Gateway instances."
 }
