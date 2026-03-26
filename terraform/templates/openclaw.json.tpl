@@ -1,7 +1,6 @@
 {
   "gateway": {
     "bind": "lan",
-    "name": "${instance_name}",
     "mode": "local",
     "auth": {
       "mode": "token"
