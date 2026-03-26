@@ -38,11 +38,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Playwright and its OS dependencies globally
-RUN npm install -g playwright && \
-    npx playwright install-deps chromium && \
-    npx playwright install chromium
-
 # Create a wrapper script to force required flags for Docker/Kubernetes/gVisor
 RUN mv /usr/bin/chromium /usr/bin/chromium-orig && \
     echo '#!/bin/bash' > /usr/bin/chromium && \
@@ -58,6 +53,10 @@ COPY --from=builder --chown=node:node /app/package.json /home/node/custom-skills
 
 # Switch back to the secure non-root user
 USER node
+
+# Install Playwright browsers into a directory the node user has access to
+ENV PLAYWRIGHT_BROWSERS_PATH=/home/node/playwright-browsers
+RUN npx playwright install chromium
 
 # Set NODE_PATH so Node.js knows where to find these global-like modules
 ENV NODE_PATH=/home/node/custom-skills/node_modules:$NODE_PATH
