@@ -1,3 +1,29 @@
+resource "kubernetes_persistent_volume_claim" "openclaw_pvc" {
+  count = var.enable_persistence ? 1 : 0
+  
+  wait_until_bound = false
+
+  metadata {
+    name      = "openclaw-pvc-${var.instance_name}"
+    namespace = var.namespace
+    labels = {
+      app      = "openclaw"
+      instance = var.instance_name
+    }
+  }
+
+  spec {
+    access_modes = ["ReadWriteOnce"]
+    resources {
+      requests = {
+        storage = var.storage_size
+      }
+    }
+    # Using standard storage class (which is backed by pd-standard or pd-balanced in GKE)
+    storage_class_name = "standard-rwo"
+  }
+}
+
 resource "kubernetes_config_map" "openclaw_config" {
   metadata {
     name      = "openclaw-config-${var.instance_name}"
@@ -47,7 +73,11 @@ resource "kubernetes_deployment" "openclaw_deployment" {
         init_container {
           name    = "init-config"
           image   = "busybox:1.36"
-          command = ["sh", "-c", "cp /etc/openclaw-template/* /workspace/ && mkdir -p /workspace/agents/main/agent && echo '{\"version\": 1, \"profiles\": {\"google-vertex:default\": {\"provider\": \"google-vertex\", \"mode\": \"api_key\", \"apiKey\": \"<authenticated>\"}}}' > /workspace/agents/main/agent/auth-profiles.json && chown -R 1000:1000 /workspace/"]
+          command = [
+            "sh", 
+            "-c", 
+            "cp /etc/openclaw-template/* /workspace/ && mkdir -p /workspace/agents/main/agent && if [ ! -f /workspace/agents/main/agent/auth-profiles.json ]; then echo '{\"version\": 1, \"profiles\": {\"google-vertex:default\": {\"provider\": \"google-vertex\", \"mode\": \"api_key\", \"apiKey\": \"<authenticated>\"}}}' > /workspace/agents/main/agent/auth-profiles.json; fi && chown -R 1000:1000 /workspace/"
+          ]
           volume_mount {
             name       = "config-template"
             mount_path = "/etc/openclaw-template"
@@ -163,10 +193,24 @@ resource "kubernetes_deployment" "openclaw_deployment" {
             name = kubernetes_config_map.openclaw_config.metadata[0].name
           }
         }
-        volume {
-          name = "config-writable"
-          empty_dir {}
+        dynamic "volume" {
+          for_each = var.enable_persistence ? [] : [1]
+          content {
+            name = "config-writable"
+            empty_dir {}
+          }
         }
+
+        dynamic "volume" {
+          for_each = var.enable_persistence ? [1] : []
+          content {
+            name = "config-writable"
+            persistent_volume_claim {
+              claim_name = kubernetes_persistent_volume_claim.openclaw_pvc[0].metadata[0].name
+            }
+          }
+        }
+
         volume {
           name = "gsm-secrets"
           csi {

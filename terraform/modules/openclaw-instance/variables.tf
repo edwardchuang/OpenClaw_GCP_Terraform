@@ -41,3 +41,15 @@ variable "dns_zone_dns_name" {
 variable "openclaw_sa_email" {
   type = string
 }
+
+variable "enable_persistence" {
+  description = "If true, creates a Persistent Volume Claim to store Agent memory, logs, and config. If false, uses an ephemeral emptyDir."
+  type        = bool
+  default     = true
+}
+
+variable "storage_size" {
+  description = "The size of the Persistent Volume for the instance (e.g., '10Gi'). Ignored if enable_persistence is false."
+  type        = string
+  default     = "10Gi"
+}

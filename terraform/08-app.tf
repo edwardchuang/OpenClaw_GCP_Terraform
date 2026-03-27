@@ -23,6 +23,8 @@ module "openclaw_instances" {
   instance_name = each.key
   namespace     = kubernetes_namespace.openclaw_namespace.metadata[0].name
   image         = each.value.image
+  enable_persistence = each.value.enable_persistence
+  storage_size       = each.value.storage_size
   project_id    = var.project_id
   region        = var.region
   swp_proxy_url     = "http://${google_network_services_gateway.swp.addresses[0]}:443"
