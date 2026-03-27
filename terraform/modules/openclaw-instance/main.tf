@@ -42,7 +42,7 @@ resource "kubernetes_deployment" "openclaw_deployment" {
       }
       spec {
         service_account_name = "openclaw-app-ksa"
-        runtime_class_name   = "gvisor"
+        # Removed gVisor because it prevents headless Chromium from running (syscall incompatibility).
         
         init_container {
           name    = "init-config"
@@ -98,12 +98,37 @@ resource "kubernetes_deployment" "openclaw_deployment" {
             value = "https://aiplatform.googleapis.com/"
           }
           env {
+            name  = "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH"
+            value = "/usr/bin/chromium"
+          }
+          env {
+            name  = "PUPPETEER_EXECUTABLE_PATH"
+            value = "/usr/bin/chromium"
+          }
+          env {
+            name  = "CHROME_BIN"
+            value = "/usr/bin/chromium"
+          }
+          env {
+            name  = "DEBUG"
+            value = "openclaw:*,pw:api"
+          }
+          env {
+            name  = "OPENCLAW_LOG_LEVEL"
+            value = "trace"
+          }
+          env {
             name  = "HTTPS_PROXY"
             value = var.swp_proxy_url
           }
+          
           env {
             name  = "HTTP_PROXY"
             value = var.swp_proxy_url
+          }
+          env {
+            name  = "NO_PROXY"
+            value = "localhost,127.0.0.1,metadata.google.internal,169.254.169.254,10.0.0.0/8,.svc.cluster.local,.googleapis.com,googleapis.com"
           }
           port {
             name           = "gateway"

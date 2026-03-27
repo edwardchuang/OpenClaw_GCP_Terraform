@@ -26,6 +26,7 @@ resource "google_compute_network_firewall_policy_rule" "block_malicious_ips" {
   action          = "deny"
   direction       = "EGRESS"
   disabled        = false
+  enable_logging  = true
 
   match {
     dest_threat_intelligences = [
