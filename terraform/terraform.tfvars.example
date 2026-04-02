@@ -1,0 +1,11 @@
+project_id = "YOUR_PROJECT_ID_HERE"
+region     = "us-central1"
+zone       = "us-central1-a"
+
+openclaw_instances = {
+  "main" = {
+    image              = "us-central1-docker.pkg.dev/YOUR_PROJECT_ID_HERE/openclaw-repo-prod/openclaw-custom:v1.0.0"
+    enable_persistence = true
+    storage_size       = "10Gi"
+  }
+}
