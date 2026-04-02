@@ -96,7 +96,7 @@ Terraform 需要一個雲端儲存桶 (GCS Bucket) 來記錄部署狀態。由�
    /*
    terraform {
      backend "gcs" {
-       bucket = "claw-platform-01-tfstate"
+       bucket = "openclaw-tfstate-YOUR_PROJECT_ID_HERE-prod"
        prefix = "terraform/openclaw/state"
      }
    }
