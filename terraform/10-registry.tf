@@ -13,7 +13,9 @@ resource "google_artifact_registry_repository" "openclaw_repo" {
 
 # Grant the GKE default service account permission to pull images from Artifact Registry
 # Note: GKE Autopilot nodes use the default compute service account unless explicitly changed.
-data "google_compute_default_service_account" "default" {}
+data "google_compute_default_service_account" "default" {
+  depends_on = [google_project_service.enabled_apis]
+}
 
 resource "google_artifact_registry_repository_iam_member" "gke_pull_access" {
   project    = var.project_id
