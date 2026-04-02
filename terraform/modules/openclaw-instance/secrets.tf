@@ -27,8 +27,8 @@ resource "google_secret_manager_secret_iam_binding" "gateway_token_accessor" {
 }
 
 # SecretProviderClass tailored for THIS instance
-resource "kubernetes_manifest" "secret_provider_class" {
-  manifest = {
+resource "kubectl_manifest" "secret_provider_class" {
+  yaml_body = yamlencode({
     apiVersion = "secrets-store.csi.x-k8s.io/v1"
     kind       = "SecretProviderClass"
     metadata = {
@@ -58,5 +58,5 @@ resource "kubernetes_manifest" "secret_provider_class" {
         }
       ]
     }
-  }
+  })
 }
