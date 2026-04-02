@@ -11,6 +11,13 @@ resource "google_container_cluster" "openclaw_cluster" {
   enable_autopilot    = true
   deletion_protection = false
 
+  # Note: Autopilot enables the Secrets Store CSI Driver by default,
+  # but the CRDs might not be immediately available via the Terraform Kubernetes provider
+  # during the initial cluster creation run.
+  secret_manager_config {
+    enabled = true
+  }
+
   network    = google_compute_network.vpc.id
   subnetwork = google_compute_subnetwork.gke_subnet.id
 

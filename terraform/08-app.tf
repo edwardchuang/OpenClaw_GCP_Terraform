@@ -15,13 +15,20 @@ provider "kubernetes" {
 
 # 1. OpenClaw Service Account Binding is handled in 06-identity-genai.tf, but the IAM binding for secrets will be handled per-instance.
 
+# 2. Wait for GKE Add-ons to fully install CRDs before attempting to deploy manifestations
+resource "time_sleep" "wait_for_gke_addons" {
+  depends_on = [google_container_cluster.openclaw_cluster]
+  create_duration = "60s"
+}
+
 # Deploy instances using the module
 module "openclaw_instances" {
   source = "./modules/openclaw-instance"
 
   depends_on = [
     google_project_service.enabled_apis,
-    google_container_cluster.openclaw_cluster
+    google_container_cluster.openclaw_cluster,
+    time_sleep.wait_for_gke_addons
   ]
 
   providers = {
