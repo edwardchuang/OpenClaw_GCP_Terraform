@@ -223,3 +223,16 @@ terraform destroy
 A: 位於 `terraform.tfvars` 中的設定：
 *   `enable_persistence = true`：為實例配置永久儲存磁碟 (Persistent Disk)。代理程式重啟後仍會保留對話歷史與學習記憶。
 *   `enable_persistence = false`：實例作為無狀態的沙盒 (Sandbox) 運行。適用於執行高風險任務或資安研究，重啟後環境將完全重置。
+
+**Q: 執行 Terraform 部署時遇到 `dial tcp ...:443: i/o timeout` 該如何處理？**
+A: 基於零信任原則，本專案啟用了 GKE 控制平面白名單 (Master Authorized Networks)。若您在 IP 經常變動的環境（如 Google Cloud Shell）中執行，連線可能會因 IP 異動而被阻擋。
+遇到此情況，請在專案根目錄執行輔助腳本以更新白名單：
+```bash
+chmod +x fix_gke_whitelist.sh
+./fix_gke_whitelist.sh
+```
+完成後，加上 `-refresh=false` 參數跳過狀態檢查並直接套用更新：
+```bash
+cd terraform
+terraform apply -var-file="terraform.tfvars" -refresh=false
+```
