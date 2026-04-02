@@ -21,9 +21,10 @@
 所有 GCP 資源皆需隸屬於特定專案 (Project)。請依下列步驟建立並初始化部署環境。
 
 ### **步驟 1：登入 Google Cloud**
-於終端機 (Terminal / 命令提示字元) 執行以下指令進行身分驗證：
+於終端機 (Terminal / 命令提示字元) 執行以下指令進行身分驗證，並設定應用程式預設憑證 (Application Default Credentials, ADC)，以便 Terraform 能夠存取 GCP 資源：
 ```bash
 gcloud auth login
+gcloud auth application-default login
 ```
 系統將開啟瀏覽器，請使用您的 Google 帳號登入並授權存取。
 
