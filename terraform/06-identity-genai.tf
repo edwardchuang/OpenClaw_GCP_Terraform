@@ -3,6 +3,7 @@ resource "google_service_account" "openclaw_sa" {
   account_id   = "openclaw-app-sa-${var.environment}"
   display_name = "OpenClaw Application Service Account"
   description  = "Service Account used by OpenClaw pods via Workload Identity"
+  depends_on   = [google_project_service.enabled_apis]
 }
 
 # Grant the OpenClaw SA permission to use Vertex AI

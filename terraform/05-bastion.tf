@@ -2,6 +2,7 @@
 resource "google_service_account" "bastion_sa" {
   account_id   = "openclaw-bastion-sa-${var.environment}"
   display_name = "Bastion Host Service Account"
+  depends_on   = [google_project_service.enabled_apis]
 }
 
 # Grant the Bastion SA roles to manage GKE clusters

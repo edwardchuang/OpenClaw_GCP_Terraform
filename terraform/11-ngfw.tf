@@ -7,6 +7,7 @@ resource "google_compute_network_firewall_policy" "ngfw_policy" {
   name        = "openclaw-ngfw-policy-${var.environment}"
   description = "Global network firewall policy for OpenClaw VPC to enforce Threat Intelligence"
   project     = var.project_id
+  depends_on  = [google_project_service.enabled_apis]
 }
 
 # 2. Attach the Firewall Policy to the VPC Network
