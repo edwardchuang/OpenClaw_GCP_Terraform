@@ -13,13 +13,6 @@ provider "kubernetes" {
   # For the sake of this template, we assume Terraform has access.
 }
 
-provider "kubectl" {
-  host                   = "https://${google_container_cluster.openclaw_cluster.endpoint}"
-  token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(google_container_cluster.openclaw_cluster.master_auth[0].cluster_ca_certificate)
-  load_config_file       = false
-}
-
 # 1. OpenClaw Service Account Binding is handled in 06-identity-genai.tf, but the IAM binding for secrets will be handled per-instance.
 
 # Deploy instances using the module
@@ -34,7 +27,6 @@ module "openclaw_instances" {
   providers = {
     kubernetes = kubernetes
     google     = google
-    kubectl    = kubectl
   }
 
   for_each      = var.openclaw_instances
