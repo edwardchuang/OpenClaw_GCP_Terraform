@@ -23,7 +23,7 @@ variable "environment" {
 
 variable "openclaw_instances" {
   type = map(object({
-    image              = string
+    image_tag          = string
     enable_persistence = optional(bool, true)
     storage_size       = optional(string, "10Gi")
   }))

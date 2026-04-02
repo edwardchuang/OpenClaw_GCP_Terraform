@@ -37,7 +37,7 @@ module "openclaw_instances" {
   for_each      = var.openclaw_instances
   instance_name = each.key
   namespace     = kubernetes_namespace.openclaw_namespace.metadata[0].name
-  image         = each.value.image
+  image         = "${var.region}-docker.pkg.dev/${var.project_id}/openclaw-repo-${var.environment}/openclaw-custom:${each.value.image_tag}"
   enable_persistence = each.value.enable_persistence
   storage_size       = each.value.storage_size
   project_id    = var.project_id

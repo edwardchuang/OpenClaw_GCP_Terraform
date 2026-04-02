@@ -72,13 +72,13 @@ region     = "us-central1"           # 預設部署區域
 
 openclaw_instances = {
   "main" = {
-    image              = "us-central1-docker.pkg.dev/YOUR_PROJECT_ID_HERE/openclaw-repo-prod/openclaw-custom:v1.0.0"
-    enable_persistence = true   # true: 啟用持久化儲存；false: 無狀態沙盒環境
+    image_tag          = "v1.0.0"       # 對應 Docker 打包時的版號
+    enable_persistence = true           # true: 啟用持久化儲存；false: 無狀態沙盒環境
     storage_size       = "10Gi" 
   }
 }
 ```
-**注意：** 請務必將檔案中的 `YOUR_PROJECT_ID_HERE` 替換為您在第一階段建立的專案 ID。
+**注意：** 請務必將檔案最上方的 `YOUR_PROJECT_ID_HERE` 替換為您在第一階段建立的專案 ID。
 
 ---
 
