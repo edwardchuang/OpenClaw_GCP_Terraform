@@ -14,6 +14,11 @@ resource "google_container_cluster" "openclaw_cluster" {
   network    = google_compute_network.vpc.id
   subnetwork = google_compute_subnetwork.gke_subnet.id
 
+  # Enable Secret Manager CSI driver
+  secret_manager_config {
+    enabled = true
+  }
+
   # Private Cluster Configuration
   private_cluster_config {
     enable_private_nodes = true

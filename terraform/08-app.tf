@@ -26,7 +26,10 @@ provider "kubectl" {
 module "openclaw_instances" {
   source = "./modules/openclaw-instance"
 
-  depends_on = [google_project_service.enabled_apis]
+  depends_on = [
+    google_project_service.enabled_apis,
+    google_container_cluster.openclaw_cluster
+  ]
 
   providers = {
     kubernetes = kubernetes
