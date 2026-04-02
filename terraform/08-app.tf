@@ -19,6 +19,11 @@ provider "kubernetes" {
 module "openclaw_instances" {
   source = "./modules/openclaw-instance"
 
+  providers = {
+    kubernetes = kubernetes
+    google     = google
+  }
+
   for_each      = var.openclaw_instances
   instance_name = each.key
   namespace     = kubernetes_namespace.openclaw_namespace.metadata[0].name
