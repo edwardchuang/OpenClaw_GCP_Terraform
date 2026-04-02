@@ -55,7 +55,7 @@ gcloud config set project $PROJECT_ID
 ### **步驟 1：複製專案原始碼**
 於終端機執行：
 ```bash
-git clone https://github.com/your-repo/OpenClaw_GCP_Terraform.git
+git clone https://github.com/edwardchuang/OpenClaw_GCP_Terraform.git
 cd OpenClaw_GCP_Terraform
 ```
 
