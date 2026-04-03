@@ -100,6 +100,8 @@ resource "google_certificate_manager_certificate" "swp_cert" {
   name        = "openclaw-swp-cert-${var.environment}-${random_id.ca_suffix.hex}"
   description = "Managed cert for SWP explicit proxy via Private CA"
   location    = var.region
+  depends_on  = [google_project_service.enabled_apis]
+  
   self_managed {
     pem_certificate = google_privateca_certificate.swp_cert.pem_certificate
     pem_private_key = tls_private_key.swp_key.private_key_pem
@@ -119,6 +121,7 @@ resource "google_network_security_gateway_security_policy" "swp_policy" {
   name        = "openclaw-swp-policy-${var.environment}"
   location    = var.region
   description = "Gateway security policy for OpenClaw Secure Web Proxy"
+  depends_on  = [google_project_service.enabled_apis]
 }
 
 # SWP Rule: Default Allow for AI Web Surfing (We rely on gVisor and Model Armor for safety)
