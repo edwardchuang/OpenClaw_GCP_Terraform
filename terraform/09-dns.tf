@@ -12,7 +12,8 @@ locals {
   pga_domains = [
     "googleapis.com.",
     "gcr.io.",
-    "pkg.dev."
+    "pkg.dev.",
+    "artifactregistry.gcr.io."
   ]
 }
 
