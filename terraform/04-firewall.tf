@@ -1,7 +1,7 @@
 # To fully implement Zero-Trust egress, we need to block broad internet access 
 # and only allow traffic to Private Google Access (PGA) and our Secure Web Proxy.
 
-# Allow egress to Private Google Access IPs (restricted.googleapis.com)
+# Allow egress to Google APIs via Private Google Access
 resource "google_compute_firewall" "allow_pga_egress" {
   name        = "openclaw-allow-egress-pga"
   network     = google_compute_network.vpc.name
@@ -9,8 +9,8 @@ resource "google_compute_firewall" "allow_pga_egress" {
   priority    = 1000
   description = "Allow egress to Google APIs via Private Google Access"
 
-  # private.googleapis.com VIP range
-  destination_ranges = ["199.36.153.8/30"]
+  # private.googleapis.com / restricted.googleapis.com VIP ranges
+  destination_ranges = ["199.36.153.8/30", "199.36.153.4/30"]
 
   allow {
     protocol = "tcp"
