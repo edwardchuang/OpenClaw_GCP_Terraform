@@ -6,6 +6,7 @@
       "mode": "token"
     },
     "controlUi": {
+      "allowedOrigins": ["*"],
       "allowInsecureAuth": true,
       "dangerouslyDisableDeviceAuth": true,
       "dangerouslyAllowHostHeaderOriginFallback": true
