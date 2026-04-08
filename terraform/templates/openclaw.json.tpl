@@ -7,7 +7,8 @@
     },
     "controlUi": {
       "allowInsecureAuth": true,
-      "dangerouslyDisableDeviceAuth": true
+      "dangerouslyDisableDeviceAuth": true,
+      "dangerouslyAllowHostHeaderOriginFallback": true
     }
   },
   "env": {

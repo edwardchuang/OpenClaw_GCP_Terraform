@@ -232,6 +232,20 @@ terraform init -reconfigure
 ```
 初始化成功後，即可直接進入「第三階段：步驟 2」的兩階段部署流程。
 
+**Q: 修改了 `openclaw.json.tpl` 等應用程式設定檔後，如何套用到已經部署的 GKE 叢集中？**
+A: 當您修改了 Terraform 中的配置檔案（例如 `terraform/templates/openclaw.json.tpl` 以支援不同的 CORS 來源），請依循以下步驟來套用變更：
+1. 在終端機執行 Terraform 更新指令：
+   ```bash
+   cd terraform
+   terraform apply -var-file="terraform.tfvars"
+   ```
+   *(Terraform 會偵測到 ConfigMap 的變更並將新設定套用至 GKE。)*
+2. 由於 Kubernetes 預設不會因為 ConfigMap 改變而自動重啟容器，我們需要手動強制重啟 Deployment 以載入最新設定。請在 Cloud Shell 執行：
+   ```bash
+   kubectl rollout restart deployment/openclaw-agent-main -n openclaw-system
+   ```
+   *(請將指令中的 `main` 替換為您的實例名稱。)* 等待數秒後，新啟動的 Pod 就會套用您修改後的最新設定檔了！
+
 **Q: 執行 Terraform 部署時，GKE 叢集建立卡住超過 15 分鐘，該如何提早發現錯誤？**
 A: 當 GKE 節點（尤其是 Autopilot）因為網路設定錯誤（例如無法解析 `*.gcr.io` 或防火牆阻擋）導致無法拉取基礎容器時，會不斷重試直到觸發長達 30 分鐘的 Timeout 失敗。
 為了提早診斷問題，您可以在另一個終端機視窗執行我們提供的除錯腳本：
