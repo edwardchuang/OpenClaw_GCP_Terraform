@@ -19,6 +19,7 @@ resource "kubernetes_namespace" "openclaw_namespace" {
   metadata {
     name = "openclaw-system"
   }
+  depends_on = [google_container_cluster.openclaw_cluster]
 }
 
 # Create a Kubernetes Service Account (KSA) for the application

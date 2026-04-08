@@ -9,6 +9,8 @@ resource "kubernetes_cluster_role" "csi_secret_sync_role" {
     resources  = ["secrets"]
     verbs      = ["get", "create", "update", "patch", "delete", "list", "watch"]
   }
+
+  depends_on = [google_container_cluster.openclaw_cluster]
 }
 
 resource "kubernetes_cluster_role_binding" "csi_secret_sync_binding" {
