@@ -201,6 +201,8 @@ gcloud compute ssh openclaw-bastion-prod \
 現在，請開啟網頁瀏覽器並前往：
 **`http://localhost:18789`**
 
+*(如果您是使用 Google Cloud Shell，由於本專案已啟用 CORS 降級防護，您可以直接點擊右上角的「網頁預覽 (Web Preview)」並變更通訊埠為 `18789` 來存取控制台。)*
+
 在 OpenClaw 的登入畫面中，輸入您在**步驟 1** 取得的 Gateway Token。
 
 🎉 **部署完成：** 您已成功在 Google Cloud 上建置並登入具備企業級資安防護的 AI 代理程式環境。
