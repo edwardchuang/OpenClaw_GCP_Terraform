@@ -232,6 +232,14 @@ terraform init -reconfigure
 ```
 初始化成功後，即可直接進入「第三階段：步驟 2」的兩階段部署流程。
 
+**Q: 執行 Terraform 部署時，GKE 叢集建立卡住超過 15 分鐘，該如何提早發現錯誤？**
+A: 當 GKE 節點（尤其是 Autopilot）因為網路設定錯誤（例如無法解析 `*.gcr.io` 或防火牆阻擋）導致無法拉取基礎容器時，會不斷重試直到觸發長達 30 分鐘的 Timeout 失敗。
+為了提早診斷問題，您可以在另一個終端機視窗執行我們提供的除錯腳本：
+```bash
+chmod +x debug_gke.sh
+./debug_gke.sh
+```
+此腳本會直接讀取底層虛擬機的序列埠 (Serial Port 1) 日誌。如果您看到 `cni plugin not initialized` 或 `failed to pull image`，通常代表是 VPC 防火牆、NAT 或 DNS 解析出了問題。
 **Q: 執行 Terraform 部署時遇到 `cannot create REST client: no client config` 該如何處理？**
 A: 這是因為在全新部署時，GKE 叢集尚未建立，Terraform 官方的 Kubernetes Provider 在預覽階段無法取得連線資訊所導致的已知限制。請參考手冊「第三階段：步驟 2」，將部署拆分為 `apply -target` (先建叢集) 與完整 `apply` (後建 K8s 資源) 兩個階段執行。
 

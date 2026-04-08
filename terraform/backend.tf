@@ -4,9 +4,11 @@
 # Alternatively, create it manually: gsutil mb -p <your-project-id> -l US gs://openclaw-tfstate-<your-project-id>-prod
 # Once created, uncomment this block, replace YOUR_PROJECT_ID_HERE with your actual project ID, and run `terraform init` again.
 
+/*
 terraform {
   backend "gcs" {
     bucket = "openclaw-tfstate-YOUR_PROJECT_ID_HERE-prod"
     prefix = "terraform/openclaw/state"
   }
 }
+*/
