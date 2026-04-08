@@ -13,7 +13,8 @@ locals {
     "googleapis.com.",
     "gcr.io.",
     "pkg.dev.",
-    "artifactregistry.gcr.io."
+    "artifactregistry.gcr.io.",
+    "artifactregistry.com."
   ]
 }
 
