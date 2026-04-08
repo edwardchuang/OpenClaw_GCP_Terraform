@@ -41,6 +41,10 @@ resource "kubernetes_config_map" "openclaw_config" {
 }
 
 resource "kubernetes_deployment" "openclaw_deployment" {
+  # We set wait_for_rollout to false so Terraform doesn't hang indefinitely 
+  # during initial deployment if the user hasn't pushed the custom Docker image yet.
+  wait_for_rollout = false
+
   metadata {
     name      = "openclaw-agent-${var.instance_name}"
     namespace = var.namespace
