@@ -224,6 +224,14 @@ A: 位於 `terraform.tfvars` 中的設定：
 *   `enable_persistence = true`：為實例配置永久儲存磁碟 (Persistent Disk)。代理程式重啟後仍會保留對話歷史與學習記憶。
 *   `enable_persistence = false`：實例作為無狀態的沙盒 (Sandbox) 運行。適用於執行高風險任務或資安研究，重啟後環境將完全重置。
 
+**Q: 執行 Terraform 部署時遇到 `Error 409: Your previous request to create the named bucket succeeded and you already own it.` 該如何處理？**
+A: 此錯誤表示您要建立的狀態儲存桶 (GCS Bucket) 在先前的執行中已經建立成功，但 Terraform 的本機狀態因為某些原因沒有記錄到它。
+若您是在全新的專案中遇到此錯誤，請直接略過「建立專用儲存桶」的步驟，直接將 `backend.tf` 註解取消並填入正確的專案 ID，接著執行：
+```bash
+terraform init -reconfigure
+```
+初始化成功後，即可直接進入「第三階段：步驟 2」的兩階段部署流程。
+
 **Q: 執行 Terraform 部署時遇到 `cannot create REST client: no client config` 該如何處理？**
 A: 這是因為在全新部署時，GKE 叢集尚未建立，Terraform 官方的 Kubernetes Provider 在預覽階段無法取得連線資訊所導致的已知限制。請參考手冊「第三階段：步驟 2」，將部署拆分為 `apply -target` (先建叢集) 與完整 `apply` (後建 K8s 資源) 兩個階段執行。
 
