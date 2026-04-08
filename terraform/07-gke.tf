@@ -69,7 +69,12 @@ resource "google_container_cluster" "openclaw_cluster" {
     google_project_service.enabled_apis,
     google_compute_subnetwork.gke_subnet,
     google_compute_subnetwork.proxy_subnet,
-    google_dns_record_set.pga_cname_record
+    google_compute_router_nat.nat,
+    google_dns_record_set.pga_a_record,
+    google_dns_record_set.pga_cname_record,
+    google_compute_firewall.allow_pga_egress,
+    google_compute_firewall.allow_internal_egress,
+    google_compute_firewall.allow_metadata_egress
   ]
 }
 
