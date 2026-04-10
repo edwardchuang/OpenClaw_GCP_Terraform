@@ -65,10 +65,16 @@ variable "enable_persistence" {
   default     = true
 }
 
-variable "storage_size" {
-  description = "The size of the Persistent Volume for the instance (e.g., '10Gi'). Ignored if enable_persistence is false."
-  type        = string
-  default     = "10Gi"
+variable "agent_name" {
+  type = string
+}
+
+variable "agent_vibe" {
+  type = string
+}
+
+variable "agent_emoji" {
+  type = string
 }
 
 variable "cpu_request" {

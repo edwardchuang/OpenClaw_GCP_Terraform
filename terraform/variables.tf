@@ -28,6 +28,9 @@ variable "openclaw_instances" {
     storage_size       = optional(string, "10Gi")
     cpu_request        = optional(string, "2000m") # Default 2 vCPU
     memory_request     = optional(string, "8Gi")   # Default 8 GB RAM
+    agent_name         = optional(string, "Claw-Agent")
+    agent_vibe         = optional(string, "Helpful, concise, technical")
+    agent_emoji        = optional(string, "🤖")
   }))
   description = "Map of OpenClaw instance configurations"
 }

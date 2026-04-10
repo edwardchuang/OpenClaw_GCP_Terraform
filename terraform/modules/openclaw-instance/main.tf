@@ -37,6 +37,15 @@ resource "kubernetes_config_map" "openclaw_config" {
       region        = var.region
       swp_proxy_url = var.swp_proxy_url
     })
+
+    "IDENTITY.md" = templatefile("${path.module}/../../templates/agent-identity/IDENTITY.md.tpl", {
+      agent_name  = var.agent_name
+      agent_vibe  = var.agent_vibe
+      agent_emoji = var.agent_emoji
+    })
+
+    "SOUL.md"      = file("${path.module}/../../templates/agent-identity/SOUL.md")
+    "HEARTBEAT.md" = file("${path.module}/../../templates/agent-identity/HEARTBEAT.md")
   }
 }
 
@@ -80,7 +89,7 @@ resource "kubernetes_deployment" "openclaw_deployment" {
           command = [
             "sh", 
             "-c", 
-            "cp /etc/openclaw-template/* /workspace/ && mkdir -p /workspace/agents/main/agent && if [ ! -f /workspace/agents/main/agent/auth-profiles.json ]; then echo '{\"version\": 1, \"profiles\": {\"google-vertex:default\": {\"provider\": \"google-vertex\", \"mode\": \"api_key\", \"apiKey\": \"<authenticated>\"}}}' > /workspace/agents/main/agent/auth-profiles.json; fi && chown -R 1000:1000 /workspace/"
+            "cp /etc/openclaw-template/openclaw.json /workspace/ && mkdir -p /workspace/agents/main/agent && if [ ! -f /workspace/agents/main/agent/auth-profiles.json ]; then echo '{\"version\": 1, \"profiles\": {\"google-vertex:default\": {\"provider\": \"google-vertex\", \"mode\": \"api_key\", \"apiKey\": \"<authenticated>\"}}}' > /workspace/agents/main/agent/auth-profiles.json; fi && for file in IDENTITY.md SOUL.md HEARTBEAT.md; do if [ ! -f /workspace/$file ]; then cp /etc/openclaw-template/$file /workspace/; fi; done && chown -R 1000:1000 /workspace/"
           ]
           volume_mount {
             name       = "config-template"

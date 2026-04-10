@@ -46,6 +46,9 @@ module "openclaw_instances" {
   memory_request     = each.value.memory_request
   project_id    = var.project_id
   region        = var.region
+  agent_name    = each.value.agent_name
+  agent_vibe    = each.value.agent_vibe
+  agent_emoji   = each.value.agent_emoji
   swp_proxy_url     = "http://${google_network_services_gateway.swp.addresses[0]}:443"
   environment       = var.environment
   subnet_id         = google_compute_subnetwork.gke_subnet.id
