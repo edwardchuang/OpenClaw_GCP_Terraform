@@ -42,6 +42,8 @@ module "openclaw_instances" {
   image         = "${var.region}-docker.pkg.dev/${var.project_id}/openclaw-repo-${var.environment}/openclaw-custom:${each.value.image_tag}"
   enable_persistence = each.value.enable_persistence
   storage_size       = each.value.storage_size
+  cpu_request        = each.value.cpu_request
+  memory_request     = each.value.memory_request
   project_id    = var.project_id
   region        = var.region
   swp_proxy_url     = "http://${google_network_services_gateway.swp.addresses[0]}:443"

@@ -75,6 +75,8 @@ openclaw_instances = {
     image_tag          = "v1.0.0"       # 對應 Docker 打包時的版號
     enable_persistence = true           # true: 啟用持久化儲存；false: 無狀態沙盒環境
     storage_size       = "10Gi" 
+    cpu_request        = "2000m"        # 配置 2 vCPU 以獲得最佳效能
+    memory_request     = "8Gi"          # 配置 8GB RAM 以支援高負載多工
   }
 }
 ```
@@ -247,6 +249,23 @@ A: 當您修改了 Terraform 中的配置檔案（例如 `terraform/templates/op
    kubectl rollout restart deployment/openclaw-agent-main -n openclaw-system
    ```
    *(請將指令中的 `main` 替換為您的實例名稱。)* 等待數秒後，新啟動的 Pod 就會套用您修改後的最新設定檔了！
+
+**Q: 如何將部署在 GKE Pod 內部的檔案 (如 `/home/node/.openclaw` 對話紀錄或設定) 下載到本地？**
+A: 本專案的 GKE 叢集已將您的 Cloud Shell IP 加入控制平面白名單，因此您可以直接在 Cloud Shell 中使用 `kubectl` 指令將檔案安全地複製出來，無須透過堡壘機 (Bastion)。
+請在 Cloud Shell 終端機依序執行：
+1. **取得叢集連線權限**：
+   ```bash
+   gcloud container clusters get-credentials openclaw-gke-prod-v2 --region us-central1 --project <您的專案ID>
+   ```
+2. **取得 OpenClaw Pod 名稱** (請將 `main` 替換為您的實例名稱)：
+   ```bash
+   POD_NAME=$(kubectl get pods -n openclaw-system -l instance=main -o jsonpath='{.items[0].metadata.name}')
+   ```
+3. **複製檔案至 Cloud Shell 本地目錄**：
+   ```bash
+   kubectl cp openclaw-system/${POD_NAME}:/home/node/.openclaw ./my-openclaw-backup
+   ```
+執行完畢後，您就可以在 Cloud Shell 的 `my-openclaw-backup` 資料夾中找到完整的備份檔案了。
 
 **Q: 執行 Terraform 部署時，GKE 叢集建立卡住超過 15 分鐘，該如何提早發現錯誤？**
 A: 當 GKE 節點（尤其是 Autopilot）因為網路設定錯誤（例如無法解析 `*.gcr.io` 或防火牆阻擋）導致無法拉取基礎容器時，會不斷重試直到觸發長達 30 分鐘的 Timeout 失敗。

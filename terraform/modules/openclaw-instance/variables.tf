@@ -70,3 +70,15 @@ variable "storage_size" {
   type        = string
   default     = "10Gi"
 }
+
+variable "cpu_request" {
+  description = "The amount of CPU requested for the OpenClaw container in GKE Autopilot (e.g., '1000m', '2000m'). Default is '2000m' (2 vCPUs) for optimal Node.js and headless browser performance."
+  type        = string
+  default     = "2000m"
+}
+
+variable "memory_request" {
+  description = "The amount of memory requested for the OpenClaw container in GKE Autopilot (e.g., '4Gi', '8Gi'). Default is '8Gi' for heavy multi-tasking."
+  type        = string
+  default     = "8Gi"
+}

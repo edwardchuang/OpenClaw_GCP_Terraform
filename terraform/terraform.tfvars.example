@@ -7,5 +7,7 @@ openclaw_instances = {
     image_tag          = "v1.0.0"
     enable_persistence = true
     storage_size       = "10Gi"
+    cpu_request        = "2000m"
+    memory_request     = "8Gi"
   }
 }

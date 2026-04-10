@@ -26,6 +26,8 @@ variable "openclaw_instances" {
     image_tag          = string
     enable_persistence = optional(bool, true)
     storage_size       = optional(string, "10Gi")
+    cpu_request        = optional(string, "2000m") # Default 2 vCPU
+    memory_request     = optional(string, "8Gi")   # Default 8 GB RAM
   }))
   description = "Map of OpenClaw instance configurations"
 }

@@ -97,6 +97,16 @@ resource "kubernetes_deployment" "openclaw_deployment" {
           name  = "openclaw"
           image = var.image
           image_pull_policy = "Always"
+          resources {
+            requests = {
+              cpu    = var.cpu_request
+              memory = var.memory_request
+            }
+            limits = {
+              cpu    = var.cpu_request
+              memory = var.memory_request
+            }
+          }
           security_context {
             run_as_user                = 1000
             allow_privilege_escalation = false
